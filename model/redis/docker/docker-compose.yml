@@ -1,0 +1,41 @@
+# Docker Compose for Redis Cache Testing
+version: '3.8'
+
+services:
+  # Primary Redis - simulates local datacenter (site1)
+  redis-local:
+    image: redis:7-alpine
+    container_name: keycloak-redis-local
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Secondary Redis - simulates remote datacenter (site2)
+  redis-remote:
+    image: redis:7-alpine
+    container_name: keycloak-redis-remote
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis Commander - Web UI for monitoring (optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: keycloak-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis-local:6379,remote:redis-remote:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis-local
+      - redis-remote
