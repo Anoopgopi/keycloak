@@ -189,7 +189,8 @@ public class DefaultRedisConnectionProvider implements RedisConnectionProvider {
         return keyPrefix + cacheName + ":" + key;
     }
 
-    @Override public boolean isClusterMode() { return clusterMode; }
+    @Override
+    public boolean isClusterMode() { return clusterMode; }
 
     @Override
     public boolean isHealthy() {
@@ -199,9 +200,11 @@ public class DefaultRedisConnectionProvider implements RedisConnectionProvider {
         } catch (Exception e) { return false; }
     }
 
-    @Override public String getConnectionInfo() { return connectionInfo; }
+    @Override
+    public String getConnectionInfo() { return connectionInfo; }
 
-    @Override public void close() {}
+    @Override
+    public void close() {}
 
     private <V> String serialize(V value) { return serializer.serializeToString(value); }
     private <V> V deserialize(String json, Class<V> type) { return serializer.deserialize(json, type); }
