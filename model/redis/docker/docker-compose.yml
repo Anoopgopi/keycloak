@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Redis standalone for development
+  redis:
+    image: redis:7-alpine
+    container_name: keycloak-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy volatile-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Insight for GUI management (optional)
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: keycloak-redis-insight
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+
+  # PostgreSQL for Keycloak
+  postgres:
+    image: postgres:15-alpine
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+  postgres-data:
+
+# Usage:
+# docker-compose up -d
+# 
+# Then start Keycloak with Redis providers:
+# ./start-keycloak.sh
